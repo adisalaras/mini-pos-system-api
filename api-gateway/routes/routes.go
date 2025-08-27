@@ -1,0 +1,24 @@
+package routes
+
+import (
+	"api-gateway/handlers"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func SetupRoutes(app *fiber.App) {
+	gatewayHandler := handlers.NewGatewayHandler()
+
+	// Product service routes
+	products := app.Group("/api/products")
+	products.Use(gatewayHandler.ProductProxy)
+
+	// Transaction service routes
+	transactions := app.Group("/api/transactions")
+	transactions.Use(gatewayHandler.TransactionProxy)
+
+	// Health check
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"status": "ok"})
+	})
+}
