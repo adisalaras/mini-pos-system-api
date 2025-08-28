@@ -8,16 +8,24 @@ import (
 )
 
 func SetupTransactionRoutes(app *fiber.App) {
-	// Initialize dependencies
 	transactionRepo := repositories.NewTransactionRepository()
 	transactionService := services.NewTransactionService(transactionRepo)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
 	
-	// Routes
-	api := app.Group("/api")
-	transactions := api.Group("/transactions")
+	reportingRepo := repositories.NewReportingRepository()
+	reportingService := services.NewReportingService(reportingRepo)
+	reportingHandler := handlers.NewReportingHandler(reportingService)
 	
+	api := app.Group("/api")
+	
+	transactions := api.Group("/transactions")
 	transactions.Post("/", transactionHandler.CreateTransaction)
 	transactions.Get("/", transactionHandler.GetAllTransactions)
 	transactions.Get("/:id", transactionHandler.GetTransaction)
+	
+	reports := api.Group("/reports")
+	reports.Get("/transactions", reportingHandler.GetTransactionSummary)
+	reports.Get("/products", reportingHandler.GetProductSalesReport)
+	reports.Get("/low-stock", reportingHandler.GetLowStockAlert)
+	reports.Get("/dashboard", reportingHandler.GetDashboardSummary)
 }
