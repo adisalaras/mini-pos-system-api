@@ -4,8 +4,7 @@ import (
 	"log"
 	"os"
 	"transaction-service/config"
-
-	// "transaction-service/routes"
+	"transaction-service/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -26,7 +25,7 @@ func main() {
 	app.Use(cors.New())
 
 	// Setup routes
-	// routes.SetupTransactionRoutes(app)
+	routes.SetupTransactionRoutes(app)
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Transaction Service is running")
 	})
