@@ -33,12 +33,12 @@ func (s *productService) CreateProduct(req *dto.CreateProductRequest) (*dto.Prod
 		Price: req.Price,
 		Stock: req.Stock,
 	}
-	
+
 	err := s.repo.Create(product)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s.modelToResponse(product), nil
 }
 
@@ -47,12 +47,12 @@ func (s *productService) GetAllProducts() ([]dto.ProductResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var responses []dto.ProductResponse
 	for _, product := range products {
 		responses = append(responses, *s.modelToResponse(&product))
 	}
-	
+
 	return responses, nil
 }
 
@@ -64,7 +64,7 @@ func (s *productService) GetProductByID(id uint) (*dto.ProductResponse, error) {
 		}
 		return nil, err
 	}
-	
+
 	return s.modelToResponse(product), nil
 }
 
@@ -77,14 +77,14 @@ func (s *productService) UpdateProduct(id uint, req *dto.UpdateProductRequest) (
 		}
 		return nil, err
 	}
-	
-	// Update fields if provided
+
+	// Update kolom yang diubah saja
 	updateData := &models.Product{
 		Name:  existingProduct.Name,
 		Price: existingProduct.Price,
 		Stock: existingProduct.Stock,
 	}
-	
+
 	if req.Name != "" {
 		updateData.Name = req.Name
 	}
@@ -94,13 +94,13 @@ func (s *productService) UpdateProduct(id uint, req *dto.UpdateProductRequest) (
 	if req.Stock >= 0 {
 		updateData.Stock = req.Stock
 	}
-	
+
 	err = s.repo.Update(id, updateData)
 	if err != nil {
 		return nil, err
 	}
-	
-	// Get updated product
+
+	// ambil produk yang sudah diupdate untuk response
 	updatedProduct, _ := s.repo.GetByID(id)
 	return s.modelToResponse(updatedProduct), nil
 }
@@ -113,7 +113,7 @@ func (s *productService) DeleteProduct(id uint) error {
 		}
 		return err
 	}
-	
+
 	return s.repo.Delete(id)
 }
 
@@ -125,7 +125,7 @@ func (s *productService) UpdateStock(id uint, newStock int) error {
 		}
 		return err
 	}
-	
+
 	return s.repo.UpdateStock(id, newStock)
 }
 
