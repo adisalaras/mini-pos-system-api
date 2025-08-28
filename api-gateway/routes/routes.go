@@ -2,7 +2,6 @@ package routes
 
 import (
 	"api-gateway/handlers"
-
 	"github.com/gofiber/fiber/v2"
 )
 
