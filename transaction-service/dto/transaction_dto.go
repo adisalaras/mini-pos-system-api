@@ -1,7 +1,7 @@
 package dto
 
 type CreateTransactionRequest struct {
-	Item []TransactionItemRequest `json:"items" validate:"required,min=1"`
+	Items []TransactionItemRequest `json:"items" validate:"required,min=1"`
 }
 
 type TransactionItemRequest struct {
