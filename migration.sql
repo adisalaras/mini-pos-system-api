@@ -1,16 +1,13 @@
--- ================================================
+
 -- Mini POS Database Migration Script
--- ================================================
 
 -- Create database (run this first)
 -- CREATE DATABASE minipos;
 -- \c minipos;
 
--- ================================================
--- 1. CREATE TABLES
--- ================================================
+-- 1. BUAT TABEL
 
--- tabel produk
+-- tabel products
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -21,7 +18,7 @@ CREATE TABLE products (
     deleted_at TIMESTAMP WITH TIME ZONE NULL
 );
 
--- tabel transaksi
+-- tabel transactions
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -31,7 +28,7 @@ CREATE TABLE transactions (
     deleted_at TIMESTAMP WITH TIME ZONE NULL
 );
 
--- tabel item_transaksi
+-- tabel transaction_items
 CREATE TABLE transaction_items (
     id SERIAL PRIMARY KEY,
     transaction_id INTEGER NOT NULL,
@@ -48,9 +45,7 @@ CREATE TABLE transaction_items (
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
 );
 
--- ================================================
--- 2. CREATE INDEXES
--- ================================================
+-- 2. BUAT INDEXES
 
 -- Index untuk produk
 CREATE INDEX idx_products_name ON products(name);
@@ -67,9 +62,8 @@ CREATE INDEX idx_transaction_items_transaction_id ON transaction_items(transacti
 CREATE INDEX idx_transaction_items_product_id ON transaction_items(product_id);
 CREATE INDEX idx_transaction_items_created_at ON transaction_items(created_at);
 
--- ================================================
+
 -- 3. CREATE TRIGGERS FOR UPDATED_AT
--- ================================================
 
 -- Function untuk mengupdate kolom updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -80,27 +74,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers for produk
-CREATE TRIGGER trigger_produk_updated_at
-    BEFORE UPDATE ON produk
+-- Triggers for products
+CREATE TRIGGER trigger_products_updated_at
+    BEFORE UPDATE ON products
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Triggers untuk transaksi
-CREATE TRIGGER trigger_transaksi_updated_at
-    BEFORE UPDATE ON transaksi
+CREATE TRIGGER trigger_transactions_updated_at
+    BEFORE UPDATE ON transactions
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- Triggers for item_transaksi
-CREATE TRIGGER trigger_item_transaksi_updated_at
-    BEFORE UPDATE ON item_transaksi
+-- Triggers for transaction_items
+CREATE TRIGGER trigger_item_transactions_updated_at
+    BEFORE UPDATE ON transaction_items
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- ================================================
+
 -- 4. INSERT data dummyy
--- ================================================
 
 -- products dummy data
 INSERT INTO products (name, price, stock) VALUES
@@ -136,9 +129,8 @@ INSERT INTO transaction_items (transaction_id, product_id, product_name, price, 
 (3, 5, 'Headset Gaming', 450000.00, 1, 450000.00),
 (3, 9, 'USB Flash Drive 32GB', 75000.00, 2, 150000.00);
 
--- ================================================
+
 -- 5. UPDATE STOCK setelah transaksi
--- ================================================
 
 -- Update stock setelah terjadi transaksi
 UPDATE products SET stock = stock - 1 WHERE id = 1; -- Laptop
@@ -148,9 +140,8 @@ UPDATE products SET stock = stock - 1 WHERE id = 4; -- Monitor
 UPDATE products SET stock = stock - 1 WHERE id = 5; -- Headset
 UPDATE products SET stock = stock - 2 WHERE id = 9; -- USB Flash Drive
 
--- ================================================
+
 -- 6. CREATE VIEWS FOR REPORTING
--- ================================================
 
 -- View untuk summary transaksi
 CREATE VIEW v_transaction_summary AS
@@ -201,9 +192,8 @@ WHERE deleted_at IS NULL
     AND stock <= 10
 ORDER BY stock ASC;
 
--- ================================================
+
 -- 7. CREATE STORED PROCEDURES/FUNCTIONS
--- ================================================
 
 -- Function untuk menghitung total transaksi
 CREATE OR REPLACE FUNCTION calculate_transaction_total(p_transaction_id INTEGER)
@@ -264,9 +254,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- ================================================
--- 8. USEFUL QUERIES FOR TESTING
--- ================================================
+-- 8. query untuk cek data dan performa
 
 -- Check all tables and their row counts
 SELECT 
@@ -279,7 +267,6 @@ FROM pg_stats
 WHERE schemaname = 'public'
 ORDER BY tablename, attname;
 
--- ambil ukuran tabel
 SELECT 
     tablename,
     pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
