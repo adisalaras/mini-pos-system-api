@@ -1,20 +1,29 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/proxy"
+    "os"
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
 type GatewayHandler struct{}
 
 func NewGatewayHandler() *GatewayHandler {
-	return &GatewayHandler{}
+    return &GatewayHandler{}
 }
 
 func (h *GatewayHandler) ProductProxy(c *fiber.Ctx) error {
-	return proxy.Do(c, "http://product-service:8081"+c.OriginalURL())
+    productServiceURL := os.Getenv("PRODUCT_SERVICE_URL")
+    if productServiceURL == "" {
+        productServiceURL = "http://127.0.0.1:8081" 
+    }
+    return proxy.Do(c, productServiceURL+c.OriginalURL())
 }
 
 func (h *GatewayHandler) TransactionProxy(c *fiber.Ctx) error {
-	return proxy.Do(c, "http://transaction-service:8082"+c.OriginalURL())
+    transactionServiceURL := os.Getenv("TRANSACTION_SERVICE_URL")
+    if transactionServiceURL == "" {
+        transactionServiceURL = "http://127.0.0.1:8082" 
+    }
+    return proxy.Do(c, transactionServiceURL+c.OriginalURL())
 }
