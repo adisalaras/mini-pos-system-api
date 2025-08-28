@@ -31,17 +31,17 @@ func (r *productRepository) Create(product *models.Product) error {
 		INSERT INTO products (name, price, stock, created_at, updated_at) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING id, created_at, updated_at`
-	
+
 	now := time.Now()
 	err := r.db.QueryRow(
-		query, 
-		product.Name, 
-		product.Price, 
-		product.Stock, 
-		now, 
+		query,
+		product.Name,
+		product.Price,
+		product.Stock,
+		now,
 		now,
 	).Scan(&product.ID, &product.CreatedAt, &product.UpdatedAt)
-	
+
 	return err
 }
 
@@ -51,13 +51,13 @@ func (r *productRepository) GetAll() ([]models.Product, error) {
 		FROM products 
 		WHERE deleted_at IS NULL 
 		ORDER BY created_at DESC`
-	
+
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
@@ -74,7 +74,7 @@ func (r *productRepository) GetAll() ([]models.Product, error) {
 		}
 		products = append(products, product)
 	}
-	
+
 	return products, nil
 }
 
@@ -83,7 +83,7 @@ func (r *productRepository) GetByID(id uint) (*models.Product, error) {
 		SELECT id, name, price, stock, created_at, updated_at 
 		FROM products 
 		WHERE id = $1 AND deleted_at IS NULL`
-	
+
 	var product models.Product
 	err := r.db.QueryRow(query, id).Scan(
 		&product.ID,
@@ -93,11 +93,11 @@ func (r *productRepository) GetByID(id uint) (*models.Product, error) {
 		&product.CreatedAt,
 		&product.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &product, nil
 }
 
@@ -106,7 +106,7 @@ func (r *productRepository) Update(id uint, product *models.Product) error {
 		UPDATE products 
 		SET name = $1, price = $2, stock = $3, updated_at = $4 
 		WHERE id = $5 AND deleted_at IS NULL`
-	
+
 	_, err := r.db.Exec(
 		query,
 		product.Name,
@@ -115,7 +115,7 @@ func (r *productRepository) Update(id uint, product *models.Product) error {
 		time.Now(),
 		id,
 	)
-	
+
 	return err
 }
 
@@ -124,7 +124,7 @@ func (r *productRepository) Delete(id uint) error {
 		UPDATE products 
 		SET deleted_at = $1 
 		WHERE id = $2 AND deleted_at IS NULL`
-	
+
 	_, err := r.db.Exec(query, time.Now(), id)
 	return err
 }
@@ -134,7 +134,7 @@ func (r *productRepository) UpdateStock(id uint, newStock int) error {
 		UPDATE products 
 		SET stock = $1, updated_at = $2 
 		WHERE id = $3 AND deleted_at IS NULL`
-	
+
 	_, err := r.db.Exec(query, newStock, time.Now(), id)
 	return err
 }

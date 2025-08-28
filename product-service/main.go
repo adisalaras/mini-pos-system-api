@@ -28,7 +28,7 @@ func main() {
 	// Setup routes
 	// routes.SetupProductRoutes(app)
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("✅ Product Service is running")
+		return c.SendString("Product Service is running")
 	})
 
 	port := os.Getenv("PORT")
@@ -38,7 +38,5 @@ func main() {
 
 	log.Printf("Product Service running on :%s\n", port)
 	log.Fatal(app.Listen(":" + port))
-
-
 
 }
