@@ -11,7 +11,7 @@ import (
 
 type TransactionService interface {
 	CreateTransaction(req *dto.CreateTransactionRequest) (*dto.TransactionResponse, error)
-	GetAllTransactions() ([]dto.TransactionResponse, error)
+	GetAllTransactions(page, limit int, search, sortBy, order string) ([]dto.TransactionResponse, int, error)
 	GetTransactionByID(id uint) (*dto.TransactionResponse, error)
 }
 
@@ -78,10 +78,10 @@ func (s *transactionService) CreateTransaction(req *dto.CreateTransactionRequest
 	return s.modelToResponse(transaction), nil
 }
 
-func (s *transactionService) GetAllTransactions() ([]dto.TransactionResponse, error) {
-	transactions, err := s.repo.GetAll()
+func (s *transactionService) GetAllTransactions(page, limit int, search, sortBy, order string) ([]dto.TransactionResponse, int, error) {
+	transactions, total, err := s.repo.GetAll(page, limit, search, sortBy, order)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var responses []dto.TransactionResponse
@@ -89,7 +89,7 @@ func (s *transactionService) GetAllTransactions() ([]dto.TransactionResponse, er
 		responses = append(responses, *s.modelToResponse(&transaction))
 	}
 
-	return responses, nil
+	return responses, total, nil
 }
 
 func (s *transactionService) GetTransactionByID(id uint) (*dto.TransactionResponse, error) {

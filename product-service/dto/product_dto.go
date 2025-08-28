@@ -7,9 +7,9 @@ type CreateProductRequest struct {
 }
 
 type UpdateProductRequest struct {
-	Name  string  `json:"name,omitempty"`
-	Price float64 `json:"price,omitempty"`
-	Stock int     `json:"stock,omitempty"`
+	Name  string  `json:"name,omitempty" validate:"omitempty"`
+	Price float64 `json:"price,omitempty" validate:"omitempty,gt=0"`
+	Stock int     `json:"stock,omitempty" validate:"omitempty,min=0"`
 }
 
 type ProductResponse struct {

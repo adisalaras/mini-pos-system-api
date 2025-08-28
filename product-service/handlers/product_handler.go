@@ -4,7 +4,9 @@ import (
 	"product-service/dto"
 	"product-service/services"
 	"strconv"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -27,7 +29,7 @@ func (h *ProductHandler) CreateProduct(c *fiber.Ctx) error {
 		})
 	}
 
-	// validasii 
+	// validasii
 	if req.Name == "" {
 		return c.Status(400).JSON(dto.ApiResponse{
 			Success: false,
@@ -104,6 +106,7 @@ func (h *ProductHandler) GetProduct(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
+	var validate = validator.New()
 	idParam := c.Params("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
@@ -118,6 +121,28 @@ func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(400).JSON(dto.ApiResponse{
 			Success: false,
 			Message: "Invalid request body",
+		})
+	}
+
+	if err := validate.Struct(&req); err != nil {
+		errs := err.(validator.ValidationErrors)
+		var msg []string
+		for _, e := range errs {
+			switch e.Field() {
+			case "Price":
+				if e.Tag() == "gt" {
+					msg = append(msg, "Price must be greater than 0")
+				}
+			case "Stock":
+				if e.Tag() == "min" {
+					msg = append(msg, "Stock cannot be less than 0")
+				}
+			}
+		}
+
+		return c.Status(400).JSON(dto.ApiResponse{
+			Success: false,
+			Message: strings.Join(msg, ", "), // gabung jadi string
 		})
 	}
 
