@@ -5,7 +5,7 @@ import (
 	"os"
 	"product-service/config"
 
-	// "product-service/routes"
+	"product-service/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -26,7 +26,7 @@ func main() {
 	app.Use(cors.New())
 
 	// Setup routes
-	// routes.SetupProductRoutes(app)
+	routes.SetupProductRoutes(app)
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Product Service is running")
 	})
