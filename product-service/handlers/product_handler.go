@@ -65,7 +65,13 @@ func (h *ProductHandler) CreateProduct(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) GetAllProducts(c *fiber.Ctx) error {
-	products, err := h.service.GetAllProducts()
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	search := c.Query("search", "")
+	sortBy := c.Query("sortBy", "created_at")
+	order := c.Query("order", "desc")
+
+	products, total, err := h.service.GetAllProducts(page, limit, search, sortBy, order)
 	if err != nil {
 		return c.Status(500).JSON(dto.ApiResponse{
 			Success: false,
@@ -76,7 +82,12 @@ func (h *ProductHandler) GetAllProducts(c *fiber.Ctx) error {
 	return c.JSON(dto.ApiResponse{
 		Success: true,
 		Message: "Products retrieved successfully",
-		Data:    products,
+		Data: fiber.Map{
+			"items": products,
+			"total": total,
+			"page":  page,
+			"limit": limit,
+		},
 	})
 }
 
