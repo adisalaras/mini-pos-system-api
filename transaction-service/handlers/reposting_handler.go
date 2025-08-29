@@ -20,28 +20,24 @@ func NewReportingHandler(reportingService services.ReportingService) *ReportingH
 func (h *ReportingHandler) GetTransactionSummary(c *fiber.Ctx) error {
 	filter := dto.ReportingFilterDTO{}
 
-	// jika start_date diset
 	if startDateStr := c.Query("start_date"); startDateStr != "" {
 		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
 			filter.StartDate = &startDate
 		}
 	}
 
-	// jika end_date diset
 	if endDateStr := c.Query("end_date"); endDateStr != "" {
 		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
 			filter.EndDate = &endDate
 		}
 	}
 
-	// jika limit diset
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if limit, err := strconv.Atoi(limitStr); err == nil {
 			filter.Limit = limit
 		}
 	}
 
-	// jika offset diset
 	if offsetStr := c.Query("offset"); offsetStr != "" {
 		if offset, err := strconv.Atoi(offsetStr); err == nil {
 			filter.Offset = offset
@@ -66,17 +62,15 @@ func (h *ReportingHandler) GetTransactionSummary(c *fiber.Ctx) error {
 }
 
 func (h *ReportingHandler) GetProductSalesReport(c *fiber.Ctx) error {
-	// memisahkan parameter filter dari query
+	// filter parameterr
 	filter := dto.ReportingFilterDTO{}
 
-	// jika limit diset
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if limit, err := strconv.Atoi(limitStr); err == nil {
 			filter.Limit = limit
 		}
 	}
 
-	// jika offset diset
 	if offsetStr := c.Query("offset"); offsetStr != "" {
 		if offset, err := strconv.Atoi(offsetStr); err == nil {
 			filter.Offset = offset

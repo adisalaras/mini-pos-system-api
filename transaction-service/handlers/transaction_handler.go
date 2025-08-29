@@ -26,7 +26,7 @@ func (h *TransactionHandler) CreateTransaction(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(dto.ApiResponse{
 			Success: false,
-			Message: "Invalid request body",
+			Message: "Invalid request body: " + err.Error(),
 		})
 	}
 
@@ -36,29 +36,33 @@ func (h *TransactionHandler) CreateTransaction(c *fiber.Ctx) error {
 			Message: "Transaction items are required",
 		})
 	}
-	var validate = validator.New()
-
+	validate := validator.New()
 	if err := validate.Struct(&req); err != nil {
 		errs := err.(validator.ValidationErrors)
-		var msg []string
+		var messages []string
 		for _, e := range errs {
-			switch e.Field() {
-			case "Price":
-				msg = append(msg, "Price must be greater than 0")
-			case "Quantity":
-				msg = append(msg, "Quantity must be greater than 0")
+			switch e.Tag() {
+			case "required":
+				messages = append(messages, e.Field()+" is required")
+			case "gt":
+				messages = append(messages, e.Field()+" must be greater than "+e.Param())
 			}
 		}
 
 		return c.Status(400).JSON(dto.ApiResponse{
 			Success: false,
-			Message: strings.Join(msg, ", "),
+			Message: strings.Join(messages, ", "),
 		})
 	}
 
 	transaction, err := h.service.CreateTransaction(&req)
 	if err != nil {
-		return c.Status(500).JSON(dto.ApiResponse{
+		statusCode := 500
+		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "insufficient stock") {
+			statusCode = 400
+		}
+
+		return c.Status(statusCode).JSON(dto.ApiResponse{
 			Success: false,
 			Message: err.Error(),
 		})
@@ -76,7 +80,15 @@ func (h *TransactionHandler) GetAllTransactions(c *fiber.Ctx) error {
 	limit, _ := strconv.Atoi(c.Query("limit", "10"))
 	search := c.Query("search", "")
 	sortBy := c.Query("sort_by", "created_at")
-	order := c.Query("order", "DESC")
+	order := strings.ToUpper(c.Query("order", "DESC"))
+
+	// validasai param page dan limit
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
 
 	transactions, total, err := h.service.GetAllTransactions(page, limit, search, sortBy, order)
 	if err != nil {
@@ -86,16 +98,20 @@ func (h *TransactionHandler) GetAllTransactions(c *fiber.Ctx) error {
 		})
 	}
 
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
 	return c.JSON(dto.ApiResponse{
 		Success: true,
 		Message: "Transactions retrieved successfully",
 		Data: map[string]interface{}{
 			"transactions": transactions,
 			"pagination": map[string]interface{}{
-				"page":       page,
-				"limit":      limit,
-				"total":      total,
-				"totalPages": int(math.Ceil(float64(total) / float64(limit))),
+				"page":        page,
+				"limit":       limit,
+				"total":       total,
+				"total_pages": totalPages,
+				"has_next":    page < totalPages,
+				"has_prev":    page > 1,
 			},
 		},
 	})
@@ -113,7 +129,12 @@ func (h *TransactionHandler) GetTransaction(c *fiber.Ctx) error {
 
 	transaction, err := h.service.GetTransactionByID(uint(id))
 	if err != nil {
-		return c.Status(404).JSON(dto.ApiResponse{
+		statusCode := 500
+		if strings.Contains(err.Error(), "not found") {
+			statusCode = 404
+		}
+
+		return c.Status(statusCode).JSON(dto.ApiResponse{
 			Success: false,
 			Message: err.Error(),
 		})

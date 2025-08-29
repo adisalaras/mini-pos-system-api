@@ -2,8 +2,8 @@
 -- Mini POS Database Migration Script
 
 -- Create database (run this first)
--- CREATE DATABASE minipos;
--- \c minipos;
+-- CREATE DATABASE mini_pos;
+-- \c mini_pos;
 
 -- 1. BUAT TABEL
 
@@ -33,8 +33,6 @@ CREATE TABLE transaction_items (
     id SERIAL PRIMARY KEY,
     transaction_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
-    product_name VARCHAR(100) NOT NULL,
-    price DECIMAL(15,2) NOT NULL CHECK (price >= 0),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     subtotal DECIMAL(15,2) NOT NULL CHECK (subtotal >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -115,19 +113,19 @@ INSERT INTO transactions (transaction_date, total_amount) VALUES
 ('2024-01-16 09:15:00', 500000.00);
 
 --  transaction items dummy data
-INSERT INTO transaction_items (transaction_id, product_id, product_name, price, quantity, subtotal) VALUES
+INSERT INTO transaction_items (transaction_id, product_id,quantity, subtotal) VALUES
 -- Transaction 1
-(1, 1, 'Laptop Dell Inspiron 15', 8500000.00, 1, 8500000.00),
-(1, 2, 'Mouse Wireless Logitech', 250000.00, 1, 250000.00),
+(1, 1, 1, 8500000.00),
+(1, 2, 1, 250000.00),
 
--- Transaction 2  
-(2, 4, 'Monitor LED 24 inch', 2200000.00, 1, 2200000.00),
-(2, 3, 'Keyboard Mechanical RGB', 750000.00, 1, 750000.00),
-(2, 2, 'Mouse Wireless Logitech', 250000.00, 1, 250000.00),
+-- Transaction 2
+(2, 4, 1, 2200000.00),
+(2, 3, 1, 750000.00),
+(2, 2, 1, 250000.00),
 
 -- Transaction 3
-(3, 5, 'Headset Gaming', 450000.00, 1, 450000.00),
-(3, 9, 'USB Flash Drive 32GB', 75000.00, 2, 150000.00);
+(3, 5, 1, 450000.00),
+(3, 9, 1, 150000.00);
 
 
 -- 5. UPDATE STOCK setelah transaksi
