@@ -18,12 +18,9 @@ type TransactionItem struct {
 	ID            uint      `json:"id"`
 	TransactionID uint      `json:"transaction_id"`
 	ProductID     uint      `json:"product_id"`
-	ProductName   string    `json:"product_name"`
-	Price         float64   `json:"price"`
 	Quantity      int       `json:"quantity"`
 	Subtotal      float64   `json:"subtotal"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }
-
 
