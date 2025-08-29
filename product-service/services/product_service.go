@@ -10,12 +10,13 @@ import (
 
 type ProductService interface {
 	CreateProduct(req *dto.CreateProductRequest) (*dto.ProductResponse, error)
-	GetAllProducts() ([]dto.ProductResponse, error)
+	GetAllProducts(page, limit int, search, sortBy, order string) ([]dto.ProductResponse, int, error)
 	GetProductByID(id uint) (*dto.ProductResponse, error)
 	UpdateProduct(id uint, req *dto.UpdateProductRequest) (*dto.ProductResponse, error)
 	DeleteProduct(id uint) error
 	UpdateStock(id uint, newStock int) error
 }
+
 
 type productService struct {
 	repo repositories.ProductRepository
@@ -42,10 +43,10 @@ func (s *productService) CreateProduct(req *dto.CreateProductRequest) (*dto.Prod
 	return s.modelToResponse(product), nil
 }
 
-func (s *productService) GetAllProducts() ([]dto.ProductResponse, error) {
-	products, err := s.repo.GetAll()
+func (s *productService) GetAllProducts(page, limit int, search, sortBy, order string) ([]dto.ProductResponse, int, error) {
+	products, total, err := s.repo.GetAll(page, limit, search, sortBy, order)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var responses []dto.ProductResponse
@@ -53,8 +54,9 @@ func (s *productService) GetAllProducts() ([]dto.ProductResponse, error) {
 		responses = append(responses, *s.modelToResponse(&product))
 	}
 
-	return responses, nil
+	return responses, total, nil
 }
+
 
 func (s *productService) GetProductByID(id uint) (*dto.ProductResponse, error) {
 	product, err := s.repo.GetByID(id)

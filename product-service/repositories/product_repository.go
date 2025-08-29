@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"product-service/config"
 	"product-service/models"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 type ProductRepository interface {
 	Create(product *models.Product) error
-	GetAll() ([]models.Product, error)
+	GetAll(page, limit int, search, sortBy, order string) ([]models.Product, int, error)
 	GetByID(id uint) (*models.Product, error)
 	Update(id uint, product *models.Product) error
 	Delete(id uint) error
@@ -45,16 +46,50 @@ func (r *productRepository) Create(product *models.Product) error {
 	return err
 }
 
-func (r *productRepository) GetAll() ([]models.Product, error) {
+func (r *productRepository) GetAll(page, limit int, search, sortBy, order string) ([]models.Product, int, error) {
+	// Default values
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	if order != "asc" && order != "desc" {
+		order = "desc"
+	}
+
+	offset := (page - 1) * limit
+
+	// Base query
 	query := `
 		SELECT id, name, price, stock, created_at, updated_at 
 		FROM products 
-		WHERE deleted_at IS NULL 
-		ORDER BY created_at DESC`
+		WHERE deleted_at IS NULL
+	`
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM products 
+		WHERE deleted_at IS NULL
+	`
 
-	rows, err := r.db.Query(query)
+	// Filtering (search by name)
+	var args []interface{}
+	if search != "" {
+		query += " AND name ILIKE $1"
+		countQuery += " AND name ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+
+	// Sorting + pagination
+	query += fmt.Sprintf(" ORDER BY %s %s LIMIT %d OFFSET %d", sortBy, order, limit, offset)
+
+	// Ambil data
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -70,13 +105,21 @@ func (r *productRepository) GetAll() ([]models.Product, error) {
 			&product.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		products = append(products, product)
 	}
 
-	return products, nil
+	// Hitung total data (tanpa limit/offset)
+	var total int
+	err = r.db.QueryRow(countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, total, nil
 }
+
 
 func (r *productRepository) GetByID(id uint) (*models.Product, error) {
 	query := `

@@ -1,14 +1,15 @@
 package dto
 
 type CreateTransactionRequest struct {
-	Items []TransactionItemRequest `json:"items" validate:"required,min=1"`
+	Items []TransactionItemRequest `json:"items" validate:"required,dive"`
+
 }
 
 type TransactionItemRequest struct {
 	ProductID   uint    `json:"product_id" validate:"required"`
 	ProductName string  `json:"product_name" validate:"required"`
-	Price       float64 `json:"price" validate:"required,min=0"`
-	Quantity    int     `json:"quantity" validate:"required,min=1"`
+	Price       float64 `json:"price" validate:"gt=0"`     
+    Quantity    int     `json:"quantity" validate:"gt=0"`  
 }
 
 type TransactionResponse struct {
@@ -18,6 +19,7 @@ type TransactionResponse struct {
 	TransactionItems []TransactionItemResponse `json:"transaction_items"`
 	CreatedAt        string                    `json:"created_at"`
 }
+
 
 type TransactionItemResponse struct {
 	ID          uint    `json:"id"`
