@@ -18,7 +18,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Reporting service routes
 	reports := app.Group("/api/reports")
-	reports.Use(gatewayHandler.ReportingProxy)
+	reports.Use(gatewayHandler.TransactionProxy)
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
