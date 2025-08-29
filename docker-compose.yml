@@ -1,81 +1,92 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # PostgreSQL Database
-  postgres:
+  db:
     image: postgres:15
-    container_name: pos_postgres
+    restart: always
     environment:
-      POSTGRES_DB: pos_system
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: mini_pos
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./migration.sql:/docker-entrypoint-initdb.d/migration.sql
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - pos_network
+      - dockernet
 
-  # Product Service
+  pgadmin:
+      image: dpage/pgadmin4:latest
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@admin.com
+        PGADMIN_DEFAULT_PASSWORD: root
+      ports:
+        - "5050:80"
+      depends_on:
+        - db
+      networks:
+        - dockernet
+
   product-service:
-    build: 
+    build:
       context: ./product-service
       dockerfile: Dockerfile
-    container_name: product_service
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: db
       DB_USER: postgres
       DB_PASSWORD: root
-      DB_NAME: pos_system
-      PORT: 8081
+      DB_NAME: mini_pos
+      DB_PORT: "5432"
+      PORT: "8081"
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
+      - db
     networks:
-      - pos_network
+      - dockernet
 
-  # Transaction Service
   transaction-service:
     build:
       context: ./transaction-service
       dockerfile: Dockerfile
-    container_name: transaction_service
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: db
       DB_USER: postgres
       DB_PASSWORD: root
-      DB_NAME: pos_system
+      DB_NAME: mini_pos
+      DB_PORT: "5432"
+      DB_SSLMODE: disable
+      PORT: "8082"
+      # pakai nama service product-service (bukan localhost) agar container bisa resolve
       PRODUCT_SERVICE_URL: http://product-service:8081
-      PORT: 8082
     ports:
       - "8082:8082"
     depends_on:
-      - postgres
+      - db
       - product-service
     networks:
-      - pos_network
+      - dockernet
 
-  # API Gateway (Nginx)
   api-gateway:
-    image: nginx:alpine
-    container_name: pos_gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    environment:
+      PORT: "8080"
+      PRODUCT_SERVICE_URL: http://product-service:8081
+      TRANSACTION_SERVICE_URL: http://transaction-service:8082
     ports:
-      - "8080:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - "8080:8080"
     depends_on:
       - product-service
       - transaction-service
     networks:
-      - pos_network
+      - dockernet
 
 volumes:
-  postgres_data:
+  db_data:
 
 networks:
-  pos_network:
-    driver: bridge
+  dockernet:
