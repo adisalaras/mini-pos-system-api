@@ -43,7 +43,7 @@ func NewProductClient(baseURL string) ProductClient {
 
 func (c *productClient) GetByID(id uint) (*ProductResponse, error) {
 	url := fmt.Sprintf("%s/api/products/%d", c.baseURL, id)
-	
+
 	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call product service: %w", err)
@@ -82,7 +82,7 @@ func (c *productClient) GetByIDWithFallback(id uint) (*ProductResponse, bool) {
 func (c *productClient) GetMultiple(ids []uint) (map[uint]*ProductResponse, error) {
 	products := make(map[uint]*ProductResponse)
 	failedIDs := make([]uint, 0)
-	
+
 	// Fetch each product individually with error tolerance
 	for _, id := range ids {
 		product, exists := c.GetByIDWithFallback(id)
@@ -92,11 +92,11 @@ func (c *productClient) GetMultiple(ids []uint) (map[uint]*ProductResponse, erro
 			failedIDs = append(failedIDs, id)
 		}
 	}
-	
+
 	// Log warning for failed products but don't return error
 	if len(failedIDs) > 0 {
 		log.Printf("Warning: Could not fetch products with IDs: %v", failedIDs)
 	}
-	
+
 	return products, nil
 }

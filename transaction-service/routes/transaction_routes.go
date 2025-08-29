@@ -13,7 +13,7 @@ import (
 func SetupTransactionRoutes(app *fiber.App) {
 	productServiceURL := os.Getenv("PRODUCT_SERVICE_URL")
 	if productServiceURL == "" {
-		productServiceURL = "http://product-service:8081" 
+		productServiceURL = "http://localhost:8081"
 	}
 
 	productClient := clients.NewProductClient(productServiceURL)
