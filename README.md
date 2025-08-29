@@ -24,7 +24,7 @@ A simple Point of Sale (POS) system built with Go, PostgreSQL, and RESTful API a
   - Daily, weekly, and monthly sales trends
 
 
-## 🏗️ Microservices Arsitektur
+## 🏗️ Microservices Architecture
 
 The system follows a clean architecture pattern with clear separation of concerns:
 ```mermaid
@@ -43,6 +43,20 @@ flowchart TB
     CRTx --> DB
 
 ```
+
+## 🏗️ Backend Layer Architecture
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/d1a1ecfe-18fb-4167-8316-0f985360580a" />
+
+This project implements a Repository-Service Pattern with a clean separation of concerns. The architecture consists of:
+- Router → Handles client requests and routes them to the correct controller.
+- Controller/Handler → Manages request/response flow and delegates tasks to the use case layer.
+- Use Case/Service → Contains the application logic and orchestrates interactions between repository and domain.
+- Repository → Abstracts data persistence and communicates with the database.
+- Domain/Model/Entity/DTO → Defines the core business rules and entities, independent of external layers.
+
+This structure makes the codebase more maintainable, testable, and scalable, ensuring flexibility for future growth.
+
 ## 🗄️ Database Schema
 
 ### Core Tables
