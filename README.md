@@ -20,8 +20,7 @@ A simple Point of Sale (POS) system built with Go, PostgreSQL, and RESTful API a
 ### 3. Comprehensive Reporting
 - **Overall Transaction Reports**: 
   - Total sales summary with date ranges
-  - Transaction volume and value analysis
-  - Daily, weekly, and monthly sales trends
+  - Reporting dashboard : top product and recent transaction
 
 
 ## 🏗️ Microservices Architecture
